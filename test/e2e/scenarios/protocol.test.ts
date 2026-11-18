@@ -1622,9 +1622,11 @@ verifies('typescript:protocol:error:not-connected', async ({ transport }: TestAr
         await closedClient.close();
 
         expect(closedClient.transport).toBeUndefined();
-        const afterClose = closedClient.listTools();
-        await expect(afterClose).rejects.toBeInstanceOf(Error);
-        await expect(afterClose).rejects.toMatchObject({ message: 'Not connected' });
+        for (const method of ['listTools', 'listPrompts', 'listResources', 'listResourceTemplates'] as const) {
+            const afterClose = closedClient[method]();
+            await expect(afterClose).rejects.toBeInstanceOf(Error);
+            await expect(afterClose).rejects.toMatchObject({ message: 'Not connected' });
+        }
     } finally {
         await closedClient.close();
         await closedServer.close();
